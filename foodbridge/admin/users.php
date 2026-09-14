@@ -43,17 +43,10 @@ $stmt->execute($params);
 $users = $stmt->fetchAll();
 
 $current_page = 'users';
+$page_title = 'User Management';
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/_nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Management - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<?php require __DIR__ . '/_nav.php'; ?>
 
 <div class="container-fluid pb-5">
     <h3 class="mb-3">User Management</h3>
@@ -117,5 +110,7 @@ $current_page = 'users';
       </table>
     </div>
 </div>
-</body>
-</html>
+</div><!-- /.admin-content -->
+</div><!-- /.admin-main -->
+</div><!-- /.admin-shell -->
+<?php require __DIR__ . '/../includes/footer.php'; ?>

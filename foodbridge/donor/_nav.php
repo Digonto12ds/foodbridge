@@ -6,7 +6,7 @@
  */
 $current_page = $current_page ?? '';
 ?>
-<nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4 sticky-top">
   <div class="container">
     <a class="navbar-brand" href="<?= e(BASE_URL) ?>donor/dashboard.php"><?= e(SITE_NAME) ?> - Donor</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#donorNav">

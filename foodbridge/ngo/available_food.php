@@ -70,17 +70,10 @@ if ($search === '' && $expiry === 'any') {
 }
 
 $current_page = 'available_food';
+$page_title = 'Available Food';
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/_nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Available Food - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<?php require __DIR__ . '/_nav.php'; ?>
 
 <div class="container pb-5">
     <h3 class="mb-3">Available Food</h3>
@@ -147,5 +140,4 @@ $current_page = 'available_food';
       </div>
     <?php endif; ?>
 </div>
-</body>
-</html>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

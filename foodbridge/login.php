@@ -40,22 +40,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+$page_title = 'Log In';
+require __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container py-5">
+<div class="fb-hero flex-grow-1 d-flex align-items-center py-5">
+<div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
-      <div class="card shadow-sm">
+      <div class="card shadow">
         <div class="card-body p-4">
-          <h2 class="mb-1"><?= e(SITE_NAME) ?></h2>
+          <a href="index.php" class="text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
+            <span class="brand-mark d-inline-flex align-items-center justify-content-center" style="width:34px;height:34px;border-radius:9px;background:var(--fb-primary);color:#fff;">🌉</span>
+            <span class="fw-brand fs-5" style="color:var(--fb-primary);"><?= e(SITE_NAME) ?></span>
+          </a>
+          <h2 class="mb-1 h4">Welcome back</h2>
           <p class="text-muted mb-4">Log in to your account</p>
 
           <?php if (isset($_GET['registered'])): ?>
@@ -102,5 +100,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </div>
-</body>
-</html>
+</div>
+<?php require __DIR__ . '/includes/footer.php'; ?>

@@ -122,25 +122,18 @@ $sql_beneficiary_stats = "SELECT COUNT(*) AS cnt, AVG(beneficiary_count) AS avg_
 $beneficiary_stats = $pdo->query($sql_beneficiary_stats)->fetch();
 
 $current_page = 'reports';
+$page_title = 'Reports';
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/_nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Reports - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .stat-card .stat-num { font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
-        .stat-card .stat-label { font-size: .8rem; color: #6c757d; }
-        .stat-card .stat-detail { font-size: .78rem; color: #6c757d; min-height: 1.1em; }
-        .sql-box { margin-top: 8px; }
-        .sql-box summary { cursor: pointer; font-size: .75rem; color: #6c757d; user-select: none; }
-        .sql-box pre { background: #f1f3f5; border-radius: 6px; padding: 8px 10px; margin-top: 6px; font-size: .74rem; white-space: pre-wrap; }
-    </style>
-</head>
-<body class="bg-light">
-<?php require __DIR__ . '/_nav.php'; ?>
+<style>
+    .stat-card .stat-num { font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
+    .stat-card .stat-label { font-size: .8rem; color: var(--fb-text-muted); }
+    .stat-card .stat-detail { font-size: .78rem; color: var(--fb-text-muted); min-height: 1.1em; }
+    .sql-box { margin-top: 8px; }
+    .sql-box summary { cursor: pointer; font-size: .75rem; color: var(--fb-text-muted); user-select: none; }
+    .sql-box pre { background: var(--fb-surface-2); border-radius: 6px; padding: 8px 10px; margin-top: 6px; font-size: .74rem; white-space: pre-wrap; }
+</style>
 
 <div class="container-fluid pb-5">
     <h3 class="mb-1">Reports</h3>
@@ -426,5 +419,7 @@ $current_page = 'reports';
 
     </div>
 </div>
-</body>
-</html>
+</div><!-- /.admin-content -->
+</div><!-- /.admin-main -->
+</div><!-- /.admin-shell -->
+<?php require __DIR__ . '/../includes/footer.php'; ?>

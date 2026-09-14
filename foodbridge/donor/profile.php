@@ -100,17 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $current_page = 'profile';
+$page_title = 'My Profile';
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/_nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My Profile - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<?php require __DIR__ . '/_nav.php'; ?>
 
 <div class="container pb-5">
   <div class="row justify-content-center">
@@ -179,5 +172,4 @@ $current_page = 'profile';
     </div>
   </div>
 </div>
-</body>
-</html>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

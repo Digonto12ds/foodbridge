@@ -21,17 +21,10 @@ $stats['approved_requests'] = (int) $pdo->query("SELECT COUNT(*) FROM requests W
 $stats['total_beneficiaries'] = (int) $pdo->query('SELECT COALESCE(SUM(beneficiary_count), 0) FROM distributions')->fetchColumn();
 
 $current_page = 'dashboard';
+$page_title = 'Admin Dashboard';
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/_nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<?php require __DIR__ . '/_nav.php'; ?>
 
 <div class="container-fluid pb-5">
     <h2 class="mb-1">Welcome, <?= e(current_user_name()) ?></h2>
@@ -70,5 +63,7 @@ $current_page = 'dashboard';
         <a href="reports.php" class="btn btn-outline-dark">View Reports</a>
     </div>
 </div>
-</body>
-</html>
+</div><!-- /.admin-content -->
+</div><!-- /.admin-main -->
+</div><!-- /.admin-shell -->
+<?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -6,7 +6,7 @@
  */
 $current_page = $current_page ?? '';
 ?>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 sticky-top">
   <div class="container">
     <a class="navbar-brand" href="<?= e(BASE_URL) ?>ngo/dashboard.php"><?= e(SITE_NAME) ?> - NGO</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#ngoNav">

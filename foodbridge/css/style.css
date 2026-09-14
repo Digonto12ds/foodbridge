@@ -1,3 +1,279 @@
-/* CUSTOM STYLES (on top of Bootstrap 5)
-   - Site-wide overrides: navbar branding, card spacing, status badge colors
-   - Kept minimal; Bootstrap utility classes handle most layout/styling */
+/* =====================================================================
+   FoodBridge - Design System
+   =====================================================================
+   Loaded AFTER Bootstrap 5's CSS. Bootstrap 5.3 exposes its palette as
+   CSS custom properties (--bs-success, --bs-success-rgb, etc.) and every
+   utility/component class (.btn-success, .bg-success, .badge, .text-
+   success, .border-success...) reads from those variables internally.
+   Redefining them here re-themes every page in the app at once, without
+   touching a single class name in any PHP file - buttons, badges, and
+   status pills everywhere keep working exactly as before, they just
+   render in FoodBridge's own palette instead of stock Bootstrap blue.
+   ===================================================================== */
+
+:root {
+    /* ---- Brand palette ---- */
+    --fb-primary:       #1F6F54;   /* deep rescue-green - the brand color */
+    --fb-primary-dark:  #164F3D;
+    --fb-primary-light: #E4EFE8;
+    --fb-secondary:     #2E5F8A;   /* NGO-side blue */
+    --fb-accent:        #B8791A;   /* amber - pending/attention */
+    --fb-danger:        #A23B3B;
+    --fb-neutral:       #6B6357;
+
+    --fb-bg:            #F6F4EE;
+    --fb-surface:       #FFFFFF;
+    --fb-surface-2:     #FBF9F3;
+    --fb-border:        #E3DDCB;
+    --fb-text:          #1B241E;
+    --fb-text-muted:    #5D6A62;
+
+    --fb-radius:        .65rem;
+    --fb-radius-lg:      1rem;
+    --fb-shadow:         0 2px 10px rgba(27, 36, 30, .07);
+    --fb-shadow-lg:      0 10px 30px -8px rgba(27, 36, 30, .18);
+
+    /* ---- Re-theme Bootstrap's own color variables ---- */
+    --bs-body-font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --bs-body-bg: var(--fb-bg);
+    --bs-body-color: var(--fb-text);
+
+    --bs-primary:      #2E5F8A;
+    --bs-primary-rgb:   46, 95, 138;
+    --bs-success:      #1F6F54;
+    --bs-success-rgb:   31, 111, 84;
+    --bs-warning:      #B8791A;
+    --bs-warning-rgb:   184, 121, 26;
+    --bs-danger:       #A23B3B;
+    --bs-danger-rgb:    162, 59, 59;
+    --bs-info:         #2E5F8A;
+    --bs-info-rgb:      46, 95, 138;
+    --bs-secondary:    #6B6357;
+    --bs-secondary-rgb: 107, 99, 87;
+    --bs-light:        #FBF9F3;
+    --bs-light-rgb:     251, 249, 243;
+    --bs-border-radius: .55rem;
+    --bs-border-radius-sm: .4rem;
+    --bs-border-radius-lg: .8rem;
+    --bs-link-color: var(--fb-primary);
+    --bs-link-hover-color: var(--fb-primary-dark);
+}
+
+body { background: var(--fb-bg); }
+
+h1, h2, h3, h4, h5, h6, .navbar-brand, .fw-brand {
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: -.01em;
+}
+
+a { color: var(--fb-primary); }
+a:hover { color: var(--fb-primary-dark); }
+
+/* ---- Cards ---- */
+.card {
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    box-shadow: var(--fb-shadow);
+}
+.card-title { font-weight: 600; }
+
+/* ---- Buttons: slightly larger tap targets, a touch more confident radius ---- */
+.btn {
+    border-radius: var(--bs-border-radius);
+    font-weight: 500;
+    padding-block: .5rem;
+}
+.btn-sm { padding-block: .3rem; }
+.btn-success { --bs-btn-hover-bg: var(--fb-primary-dark); --bs-btn-hover-border-color: var(--fb-primary-dark); }
+
+/* ---- Forms ---- */
+.form-control, .form-select {
+    border-color: var(--fb-border);
+    border-radius: var(--bs-border-radius);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--fb-primary);
+    box-shadow: 0 0 0 .2rem rgba(var(--bs-success-rgb), .18);
+}
+label.form-label { font-weight: 500; font-size: .88rem; }
+
+/* ---- Tables ---- */
+.table thead th {
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .04em;
+    color: var(--fb-text-muted);
+    background: var(--fb-surface-2);
+    border-bottom-width: 1px;
+}
+.table > :not(caption) > * > * { border-bottom-color: var(--fb-border); }
+.table-hover > tbody > tr:hover > * { background-color: var(--fb-primary-light); }
+
+/* ---- Badges: a little more breathing room ---- */
+.badge { font-weight: 600; letter-spacing: .01em; padding: .42em .65em; }
+
+/* ---- Alerts ---- */
+.alert { border: 1px solid transparent; border-radius: var(--fb-radius); transition: opacity .4s ease; }
+.alert-dismissible .btn-close { padding: 1rem; }
+.alert.fb-fade-out { opacity: 0; }
+
+/* =====================================================================
+   Public site chrome (guest navbar + footer) - includes/navbar.php,
+   includes/footer.php, index.php, about.php, how-it-works.php
+   ===================================================================== */
+.fb-navbar {
+    background: var(--fb-surface);
+    border-bottom: 1px solid var(--fb-border);
+    box-shadow: var(--fb-shadow);
+}
+.fb-navbar .navbar-brand {
+    color: var(--fb-primary);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.fb-navbar .navbar-brand .brand-mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 9px;
+    background: var(--fb-primary); color: #fff; font-size: 1.1rem;
+}
+.fb-navbar .nav-link { color: var(--fb-text); font-weight: 500; }
+.fb-navbar .nav-link.active, .fb-navbar .nav-link:hover { color: var(--fb-primary); }
+
+.fb-hero {
+    background: linear-gradient(155deg, var(--fb-primary-light) 0%, var(--fb-bg) 60%);
+    border-bottom: 1px solid var(--fb-border);
+}
+.fb-hero .display-5 { font-weight: 700; }
+
+.fb-icon-tile {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--fb-primary-light); color: var(--fb-primary);
+    font-size: 1.4rem; margin-bottom: .75rem;
+}
+
+.fb-step {
+    position: relative;
+    padding-left: 3.2rem;
+}
+.fb-step .fb-step-num {
+    position: absolute; left: 0; top: 0;
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    background: var(--fb-primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-family: 'Poppins', sans-serif;
+}
+
+footer.fb-footer {
+    background: #16211B;
+    color: #C9D2CB;
+    margin-top: auto;
+}
+footer.fb-footer a { color: #E6EEE9; text-decoration: none; }
+footer.fb-footer a:hover { color: #fff; text-decoration: underline; }
+footer.fb-footer .fb-footer-brand { color: #fff; font-weight: 700; }
+footer.fb-footer hr { border-color: #2A3830; }
+
+/* Make sure short pages still push the footer to the bottom */
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; min-height: 100vh; }
+body > footer.fb-footer { margin-top: auto; }
+
+/* =====================================================================
+   Role dashboards (donor/_nav.php, ngo/_nav.php) - keep their own
+   bg-success / bg-primary navbars, just tidy them up
+   ===================================================================== */
+.navbar.sticky-top { box-shadow: var(--fb-shadow); }
+
+/* =====================================================================
+   Admin sidebar layout - admin/_sidebar.php
+   ===================================================================== */
+.admin-shell { display: flex; min-height: 100vh; align-items: stretch; }
+
+.admin-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: #142019;
+    color: #C9D2CB;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    overflow-y: auto;
+    transition: transform .2s ease;
+    z-index: 1040;
+}
+.admin-sidebar .sidebar-brand {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    color: #fff; font-weight: 700; font-size: 1.05rem;
+    display: flex; align-items: center; gap: .6rem;
+}
+.admin-sidebar .sidebar-brand .brand-mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--fb-primary); color: #fff; font-size: 1rem; flex-shrink: 0;
+}
+.admin-sidebar nav { padding: .75rem .6rem; flex: 1; }
+.admin-sidebar .nav-link {
+    color: #B7C2BA; border-radius: .5rem; padding: .55rem .8rem;
+    font-size: .9rem; font-weight: 500; margin-bottom: .15rem;
+    display: flex; align-items: center; gap: .6rem;
+}
+.admin-sidebar .nav-link:hover { background: rgba(255,255,255,.06); color: #fff; }
+.admin-sidebar .nav-link.active { background: var(--fb-primary); color: #fff; }
+.admin-sidebar .sidebar-foot {
+    padding: .9rem 1.1rem; border-top: 1px solid rgba(255,255,255,.08);
+    font-size: .82rem;
+}
+.admin-sidebar .sidebar-foot .who { color: #fff; font-weight: 600; display: block; }
+
+.admin-topbar {
+    background: var(--fb-surface);
+    border-bottom: 1px solid var(--fb-border);
+    padding: .7rem 1.25rem;
+    display: flex; align-items: center; gap: .75rem;
+    position: sticky; top: 0; z-index: 10;
+}
+.admin-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.admin-content { padding: 1.5rem; flex: 1; }
+
+.sidebar-toggle-btn {
+    display: none;
+    border: 1px solid var(--fb-border);
+    background: var(--fb-surface);
+    border-radius: .5rem;
+    width: 38px; height: 38px;
+    align-items: center; justify-content: center;
+}
+
+.admin-backdrop {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1035;
+}
+
+@media (max-width: 991.98px) {
+    .admin-sidebar {
+        position: fixed; left: 0; top: 0;
+        transform: translateX(-100%);
+    }
+    .admin-sidebar.show { transform: translateX(0); }
+    .sidebar-toggle-btn { display: inline-flex; }
+    body.admin-sidebar-open .admin-backdrop { display: block; }
+}
+
+/* =====================================================================
+   Small screens generally
+   ===================================================================== */
+@media (max-width: 575.98px) {
+    .fb-hero .display-5 { font-size: 1.9rem; }
+    .admin-content { padding: 1rem; }
+}
+
+/* Client-side table search box (js/script.js wires this up) */
+.table-search-wrap { max-width: 320px; }

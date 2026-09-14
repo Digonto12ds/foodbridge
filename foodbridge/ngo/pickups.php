@@ -25,17 +25,10 @@ $stmt->execute([':ngo_id' => $ngo_id]);
 $pickups = $stmt->fetchAll();
 
 $current_page = 'pickups';
+$page_title = 'Pickups';
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/_nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pickups - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<?php require __DIR__ . '/_nav.php'; ?>
 
 <div class="container pb-5">
     <h3 class="mb-3">Pickups</h3>
@@ -84,5 +77,4 @@ $current_page = 'pickups';
       </div>
     <?php endif; ?>
 </div>
-</body>
-</html>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

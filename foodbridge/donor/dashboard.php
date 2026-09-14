@@ -37,17 +37,10 @@ foreach ($stmt->fetchAll() as $row) {
 }
 
 $current_page = 'dashboard';
+$page_title = 'Donor Dashboard';
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/_nav.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Donor Dashboard - <?= e(SITE_NAME) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<?php require __DIR__ . '/_nav.php'; ?>
 
 <div class="container pb-5">
     <h2 class="mb-1">Welcome, <?= e(current_user_name()) ?></h2>
@@ -109,5 +102,4 @@ $current_page = 'dashboard';
         <a href="my_donations.php" class="btn btn-outline-success">View My Donations</a>
     </div>
 </div>
-</body>
-</html>
+<?php require __DIR__ . '/../includes/footer.php'; ?>
