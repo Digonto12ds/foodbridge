@@ -18,11 +18,26 @@
 
 require_once __DIR__ . '/auth.php';
 
-/** Must be logged in (any role) or get bounced to login.php. */
+/**
+ * Must be logged in (any role) or get bounced to login.php. Also kills
+ * the session immediately if an admin deactivated this account after
+ * it was already logged in - being logged out at the *next* login
+ * attempt isn't good enough for a "deactivate this user" control.
+ */
 function require_login(): void
 {
     if (!is_logged_in()) {
         redirect(BASE_URL . 'login.php?error=login_required');
+    }
+
+    global $pdo;
+    $stmt = $pdo->prepare('SELECT is_active FROM users WHERE user_id = :id LIMIT 1');
+    $stmt->execute([':id' => current_user_id()]);
+    $row = $stmt->fetch();
+
+    if (!$row || (int) $row['is_active'] === 0) {
+        logout_user();
+        redirect(BASE_URL . 'login.php?error=account_deactivated');
     }
 }
 

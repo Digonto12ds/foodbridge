@@ -61,12 +61,14 @@ function dashboard_path_for_role(?string $role): string
  * Verify email + password against the `users` table and, on success,
  * start an authenticated session.
  *
- * @return array|false the user row on success, or false on invalid credentials
+ * @return array|string|false the user row on success, false on invalid
+ *         credentials, or the string 'inactive' if the credentials are
+ *         correct but an admin has deactivated the account.
  */
 function attempt_login(PDO $pdo, string $email, string $password)
 {
     $stmt = $pdo->prepare(
-        'SELECT user_id, name, email, password, role FROM users WHERE email = :email LIMIT 1'
+        'SELECT user_id, name, email, password, role, is_active FROM users WHERE email = :email LIMIT 1'
     );
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch();
@@ -75,6 +77,10 @@ function attempt_login(PDO $pdo, string $email, string $password)
     // is wrong - never reveal which one it was.
     if (!$user || !password_verify($password, $user['password'])) {
         return false;
+    }
+
+    if ((int) $user['is_active'] === 0) {
+        return 'inactive';
     }
 
     // Regenerate the session ID on login to prevent session fixation attacks.

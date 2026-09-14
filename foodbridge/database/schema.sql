@@ -21,6 +21,7 @@ CREATE TABLE users (
     phone       VARCHAR(15)     NOT NULL,
     address     VARCHAR(255)    NULL,
     role        ENUM('donor','ngo','admin') NOT NULL,
+    is_active   TINYINT(1)      NOT NULL DEFAULT 1,
     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT uq_users_email UNIQUE (email),

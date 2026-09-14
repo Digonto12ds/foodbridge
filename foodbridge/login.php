@@ -30,7 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         $user = attempt_login($pdo, $old_email, $password);
 
-        if (!$user) {
+        if ($user === 'inactive') {
+            $errors[] = 'This account has been deactivated. Please contact an administrator.';
+        } elseif (!$user) {
             $errors[] = 'Invalid email or password.';
         } else {
             // Session now holds user_id + name + role -> route by role.
@@ -64,6 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php endif; ?>
           <?php if (($_GET['error'] ?? '') === 'login_required'): ?>
             <div class="alert alert-warning">Please log in to continue.</div>
+          <?php endif; ?>
+          <?php if (($_GET['error'] ?? '') === 'account_deactivated'): ?>
+            <div class="alert alert-danger">This account has been deactivated. Please contact an administrator.</div>
           <?php endif; ?>
 
           <?php if ($errors): ?>

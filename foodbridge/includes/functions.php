@@ -131,6 +131,41 @@ function status_badge_class(string $status): string
     return $map[$status] ?? 'bg-secondary';
 }
 
+/** Format a quantity + unit for display, trimming trailing zeros ("12.50" -> "12.5", "10.00" -> "10"). */
+function format_qty(float $qty, string $unit): string
+{
+    return rtrim(rtrim(number_format($qty, 2), '0'), '.') . ' ' . $unit;
+}
+
+/**
+ * Flip a user's is_active flag (admin-only action). Refuses to let an
+ * admin deactivate their own account, which would otherwise lock them
+ * out with no other admin necessarily available to undo it.
+ *
+ * @return string a short result code: 'activated', 'deactivated', or 'self'
+ */
+function toggle_user_active(PDO $pdo, int $target_user_id, int $current_admin_user_id): string
+{
+    if ($target_user_id === $current_admin_user_id) {
+        return 'self';
+    }
+
+    $stmt = $pdo->prepare('SELECT is_active FROM users WHERE user_id = :id LIMIT 1');
+    $stmt->execute([':id' => $target_user_id]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+        return 'self'; // not found - treat as a no-op the same way as blocked
+    }
+
+    $new_status = (int) $row['is_active'] === 1 ? 0 : 1;
+
+    $stmt = $pdo->prepare('UPDATE users SET is_active = :is_active WHERE user_id = :id');
+    $stmt->execute([':is_active' => $new_status, ':id' => $target_user_id]);
+
+    return $new_status === 1 ? 'activated' : 'deactivated';
+}
+
 /**
  * Parse an HTML datetime-local value ("Y-m-d\TH:i" or with seconds) into
  * MySQL DATETIME format ("Y-m-d H:i:s"). Returns null if the value is
