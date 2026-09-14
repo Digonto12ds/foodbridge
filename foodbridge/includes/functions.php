@@ -61,6 +61,34 @@ function auto_expire_donations(PDO $pdo, int $donor_id): void
     $stmt->execute([':donor_id' => $donor_id]);
 }
 
+/**
+ * Look up the ngo_id (ngos table) that belongs to a logged-in user.
+ * The `requests` table is keyed by ngo_id, not user_id, so every ngo
+ * page needs this to scope queries to "only my own requests".
+ */
+function get_ngo_id(PDO $pdo, int $user_id): ?int
+{
+    $stmt = $pdo->prepare('SELECT ngo_id FROM ngos WHERE user_id = :user_id LIMIT 1');
+    $stmt->execute([':user_id' => $user_id]);
+    $row = $stmt->fetch();
+
+    return $row ? (int) $row['ngo_id'] : null;
+}
+
+/**
+ * Same auto-expire rule as auto_expire_donations(), but across every
+ * donor's donations. NGOs browse the whole marketplace, not one
+ * donor's donations, so there's no single donor_id to scope this to.
+ */
+function auto_expire_all_donations(PDO $pdo): void
+{
+    $pdo->exec(
+        "UPDATE donations
+         SET status = 'Expired'
+         WHERE status = 'Available' AND expiry_time <= NOW()"
+    );
+}
+
 // Business rules for which donor actions make sense for a given status:
 // - Edit: only while the donation hasn't been requested/claimed/etc yet.
 // - Cancel: only while it's still Available or Requested (not already
@@ -76,16 +104,28 @@ function can_cancel_donation(string $status): bool
     return in_array($status, ['Available', 'Requested'], true);
 }
 
-/** Bootstrap badge class for a donation status, for consistent status pills. */
+/**
+ * Bootstrap badge class for a status pill. Shared across donation
+ * statuses (Available/Requested/Claimed/Completed/Expired/Cancelled),
+ * request statuses (Pending/Approved/Rejected/Completed/Cancelled), and
+ * pickup statuses (Scheduled/Picked Up/Completed/Cancelled) - the keys
+ * don't collide, and where they overlap (Completed, Cancelled) the same
+ * color is the right choice anyway.
+ */
 function status_badge_class(string $status): string
 {
     $map = [
-        'Available' => 'bg-success',
-        'Requested' => 'bg-warning text-dark',
-        'Claimed'   => 'bg-info text-dark',
-        'Completed' => 'bg-primary',
-        'Expired'   => 'bg-secondary',
-        'Cancelled' => 'bg-danger',
+        'Available'  => 'bg-success',
+        'Requested'  => 'bg-warning text-dark',
+        'Claimed'    => 'bg-info text-dark',
+        'Completed'  => 'bg-primary',
+        'Expired'    => 'bg-secondary',
+        'Cancelled'  => 'bg-danger',
+        'Pending'    => 'bg-warning text-dark',
+        'Approved'   => 'bg-info text-dark',
+        'Rejected'   => 'bg-danger',
+        'Scheduled'  => 'bg-info text-dark',
+        'Picked Up'  => 'bg-primary',
     ];
 
     return $map[$status] ?? 'bg-secondary';
