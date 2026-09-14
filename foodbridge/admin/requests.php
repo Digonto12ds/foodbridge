@@ -3,8 +3,12 @@
 // - Approve or reject NGO requests
 //
 // Approve (one atomic transaction):
-//   requests.status   Pending -> Approved
-//   donations.status  Requested -> Claimed
+//   requests.status   Pending -> Approved            (this file)
+//   donations.status  Requested -> Claimed            (trg_requests_after_approve -
+//                       see database/advanced_features.sql; the database
+//                       enforces this cascade itself now, so it still
+//                       holds even if some other future code path
+//                       updates requests.status directly)
 //   pickups            a new row is created (Scheduled), using the
 //                       pickup date/time submitted with the approval -
 //                       "create/schedule pickup" happens as part of
@@ -53,16 +57,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new RuntimeException('This request is no longer pending.');
                 }
 
+                // trg_requests_after_approve fires on this UPDATE and moves the
+                // linked donation from Requested to Claimed itself; if that
+                // donation is no longer Requested (e.g. an admin force-cancelled
+                // it from admin/donations.php while this request sat Pending),
+                // the trigger SIGNALs an error and this whole UPDATE is rolled
+                // back - caught below as a PDOException with SQLSTATE 45000.
                 $stmt = $pdo->prepare("UPDATE requests SET status = 'Approved' WHERE request_id = :id AND status = 'Pending'");
                 $stmt->execute([':id' => $request_id]);
                 if ($stmt->rowCount() === 0) {
                     throw new RuntimeException('This request is no longer pending.');
-                }
-
-                $stmt = $pdo->prepare("UPDATE donations SET status = 'Claimed' WHERE donation_id = :id AND status = 'Requested'");
-                $stmt->execute([':id' => $row['donation_id']]);
-                if ($stmt->rowCount() === 0) {
-                    throw new RuntimeException('The linked donation is no longer in a requested state.');
                 }
 
                 $stmt = $pdo->prepare(
@@ -84,7 +88,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (PDOException $ex) {
                 $pdo->rollBack();
                 error_log('FoodBridge request approval failed: ' . $ex->getMessage());
-                $errors[] = 'Could not approve this request. Please try again.';
+                // SQLSTATE 45000 is trg_requests_after_approve's own SIGNAL -
+                // its message is already written for an end user to read.
+                $errors[] = ($ex->getCode() === '45000')
+                    ? 'The linked donation is no longer in a Requested state, so this request can no longer be approved.'
+                    : 'Could not approve this request. Please try again.';
             }
         }
 

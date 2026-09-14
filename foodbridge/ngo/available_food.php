@@ -2,6 +2,10 @@
 // AVAILABLE FOOD (protected: require_role('ngo'))
 // - Donations where status = 'Available' AND expiry_time has not passed
 // - Marketplace-wide (every donor), with search + category + expiry filters
+// - Reads through v_donation_details (the donations+categories+donors+users
+//   join, defined once in database/advanced_features.sql) and, for the
+//   plain "browse everything, maybe one category" case, through
+//   sp_get_available_donations() built on top of that same view
 require_once __DIR__ . '/../includes/role_check.php';
 require_role('ngo');
 
@@ -25,36 +29,45 @@ if (!in_array($expiry, $valid_expiry, true)) {
     $expiry = 'any';
 }
 
-// ---- Build the query safely: fixed SQL fragments + bound parameters only ----
-$sql = "SELECT d.donation_id, d.food_name, d.quantity, d.unit, d.expiry_time, d.pickup_location,
-               c.category_name, COALESCE(don.organization_name, u.name) AS donor_display_name
-        FROM donations d
-        JOIN categories c ON c.category_id = d.category_id
-        JOIN donors don ON don.donor_id = d.donor_id
-        JOIN users u ON u.user_id = don.user_id
-        WHERE d.status = 'Available' AND d.expiry_time > NOW()";
-$params = [];
+// ---- Fetch: the stored procedure for the common case, a query against
+//      the same view for anything the procedure's fixed signature can't
+//      express (free-text search, an expiry window) ----
+if ($search === '' && $expiry === 'any') {
+    // "Available, optionally one category" is the single most-run read
+    // in the app - this is exactly sp_get_available_donations() (see
+    // database/advanced_features.sql), so let the database do it.
+    $stmt = $pdo->prepare('CALL sp_get_available_donations(:category_id)');
+    $stmt->execute([':category_id' => $category_id]);
+    $donations = $stmt->fetchAll();
+    $stmt->closeCursor(); // required after CALL before this connection runs another query
+} else {
+    // Search and/or an expiry window is active - a fixed procedure
+    // signature can't cleanly express arbitrary optional filters, so
+    // build a normal parameterized query against the same view instead.
+    $sql = "SELECT * FROM v_donation_details WHERE status = 'Available' AND expiry_time > NOW()";
+    $params = [];
 
-if ($search !== '') {
-    $sql .= ' AND d.food_name LIKE :search';
-    // Escape LIKE wildcards the user typed so "50%" or "a_b" search literally.
-    $escaped = addcslashes($search, '%_\\');
-    $params[':search'] = '%' . $escaped . '%';
-}
-if ($category_id !== null) {
-    $sql .= ' AND d.category_id = :category_id';
-    $params[':category_id'] = $category_id;
-}
-if ($expiry !== 'any') {
-    $sql .= ' AND d.expiry_time <= DATE_ADD(NOW(), INTERVAL :expiry_hours HOUR)';
-    $params[':expiry_hours'] = $expiry_hours_map[$expiry];
-}
+    if ($search !== '') {
+        $sql .= ' AND food_name LIKE :search';
+        // Escape LIKE wildcards the user typed so "50%" or "a_b" search literally.
+        $escaped = addcslashes($search, '%_\\');
+        $params[':search'] = '%' . $escaped . '%';
+    }
+    if ($category_id !== null) {
+        $sql .= ' AND category_id = :category_id';
+        $params[':category_id'] = $category_id;
+    }
+    if ($expiry !== 'any') {
+        $sql .= ' AND expiry_time <= DATE_ADD(NOW(), INTERVAL :expiry_hours HOUR)';
+        $params[':expiry_hours'] = $expiry_hours_map[$expiry];
+    }
 
-$sql .= ' ORDER BY d.expiry_time ASC';
+    $sql .= ' ORDER BY expiry_time ASC';
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$donations = $stmt->fetchAll();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $donations = $stmt->fetchAll();
+}
 
 $current_page = 'available_food';
 ?>

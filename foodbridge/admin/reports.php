@@ -1,7 +1,8 @@
 <?php
 // REPORTS (protected: require_role('admin'))
-// - Read-only aggregate statistics: donations by status/category,
-//   most active donors/NGOs, distribution totals
+// - Read-only aggregate statistics, all via COUNT/SUM/AVG/MIN/MAX + GROUP BY:
+//   donations by status/category, requests by status, most active
+//   donors/NGOs, donation size and beneficiary-count spread, distribution totals
 require_once __DIR__ . '/../includes/role_check.php';
 require_role('admin');
 
@@ -18,6 +19,24 @@ $by_category = $pdo->query(
      GROUP BY c.category_id, c.category_name
      ORDER BY donation_count DESC"
 )->fetchAll();
+
+$requests_by_status = $pdo->query(
+    "SELECT status, COUNT(*) AS cnt FROM requests GROUP BY status ORDER BY cnt DESC"
+)->fetchAll();
+
+// Donation-size stats per unit (mixing kg with pieces with packets into one
+// AVG/MIN/MAX would be meaningless, so this groups by unit first).
+$donation_size_stats = $pdo->query(
+    "SELECT unit, COUNT(*) AS cnt, AVG(quantity) AS avg_qty, MIN(quantity) AS min_qty, MAX(quantity) AS max_qty
+     FROM donations
+     GROUP BY unit
+     ORDER BY cnt DESC"
+)->fetchAll();
+
+$beneficiary_stats = $pdo->query(
+    "SELECT COUNT(*) AS cnt, AVG(beneficiary_count) AS avg_ben, MIN(beneficiary_count) AS min_ben, MAX(beneficiary_count) AS max_ben
+     FROM distributions"
+)->fetch();
 
 $top_donors = $pdo->query(
     "SELECT COALESCE(don.organization_name, u.name) AS donor_display_name,
@@ -84,6 +103,54 @@ $current_page = 'reports';
                     <tr>
                       <td><span class="badge <?= status_badge_class($row['status']) ?>"><?= e($row['status']) ?></span></td>
                       <td class="text-end"><?= (int) $row['cnt'] ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title">Requests by Status</h5>
+              <table class="table table-sm mb-0">
+                <thead><tr><th>Status</th><th class="text-end">Count</th></tr></thead>
+                <tbody>
+                  <?php if (!$requests_by_status): ?>
+                    <tr><td colspan="2" class="text-muted text-center">No requests yet.</td></tr>
+                  <?php endif; ?>
+                  <?php foreach ($requests_by_status as $row): ?>
+                    <tr>
+                      <td><span class="badge <?= status_badge_class($row['status']) ?>"><?= e($row['status']) ?></span></td>
+                      <td class="text-end"><?= (int) $row['cnt'] ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title">Donation Size by Unit</h5>
+              <p class="text-muted small mb-2">Average / smallest / largest donation, grouped by unit since a kg and a piece can't be averaged together.</p>
+              <table class="table table-sm mb-0">
+                <thead><tr><th>Unit</th><th class="text-end">Count</th><th class="text-end">Avg</th><th class="text-end">Min</th><th class="text-end">Max</th></tr></thead>
+                <tbody>
+                  <?php if (!$donation_size_stats): ?>
+                    <tr><td colspan="5" class="text-muted text-center">No donations yet.</td></tr>
+                  <?php endif; ?>
+                  <?php foreach ($donation_size_stats as $row): ?>
+                    <tr>
+                      <td><?= e($row['unit']) ?></td>
+                      <td class="text-end"><?= (int) $row['cnt'] ?></td>
+                      <td class="text-end"><?= e(number_format((float) $row['avg_qty'], 2)) ?></td>
+                      <td class="text-end"><?= e(rtrim(rtrim(number_format((float) $row['min_qty'], 2), '0'), '.')) ?></td>
+                      <td class="text-end"><?= e(rtrim(rtrim(number_format((float) $row['max_qty'], 2), '0'), '.')) ?></td>
                     </tr>
                   <?php endforeach; ?>
                 </tbody>
@@ -163,7 +230,7 @@ $current_page = 'reports';
               <h5 class="card-title">Distribution Summary</h5>
               <p class="mb-1">Total distributions recorded: <strong><?= (int) $distribution_totals['distribution_count'] ?></strong></p>
               <p class="mb-1">Total beneficiaries reached: <strong><?= (int) $distribution_totals['total_beneficiaries'] ?></strong></p>
-              <p class="mb-0">Total quantity distributed:
+              <p class="mb-1">Total quantity distributed:
                 <?php if (!$distributed_by_unit): ?>
                   <span class="text-muted">None yet</span>
                 <?php else: ?>
@@ -171,6 +238,15 @@ $current_page = 'reports';
                       $parts[] = format_qty((float) $row['total'], $row['unit']);
                   } ?>
                   <strong><?= e(implode(', ', $parts)) ?></strong>
+                <?php endif; ?>
+              </p>
+              <p class="mb-0">Beneficiaries per distribution:
+                <?php if ((int) $beneficiary_stats['cnt'] === 0): ?>
+                  <span class="text-muted">None yet</span>
+                <?php else: ?>
+                  avg <strong><?= e(number_format((float) $beneficiary_stats['avg_ben'], 1)) ?></strong>,
+                  smallest <strong><?= (int) $beneficiary_stats['min_ben'] ?></strong>,
+                  largest <strong><?= (int) $beneficiary_stats['max_ben'] ?></strong>
                 <?php endif; ?>
               </p>
             </div>

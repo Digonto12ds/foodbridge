@@ -55,6 +55,11 @@ $options = [
     // Use real prepared statements (sent to MySQL as-is) instead of
     // PHP emulating them - safer and lets MySQL type-check bound values.
     PDO::ATTR_EMULATE_PREPARES   => false,
+    // Buffer stored-procedure result sets fully before returning control.
+    // Without this, calling a CALL statement (see sp_get_available_donations
+    // in database/advanced_features.sql) can leave the connection unable to
+    // run a further query until the previous one's cursor is closed.
+    PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
 ];
 
 try {

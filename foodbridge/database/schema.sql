@@ -174,3 +174,47 @@ CREATE TABLE distributions (
     CONSTRAINT chk_distributions_quantity CHECK (quantity_distributed > 0),
     CONSTRAINT chk_distributions_beneficiaries CHECK (beneficiary_count >= 0)
 ) ENGINE = InnoDB;
+
+-- =====================================================================
+-- INDEXES
+-- =====================================================================
+-- InnoDB already builds an index on every PRIMARY KEY and every FOREIGN
+-- KEY column automatically (it needs one to enforce the constraint), so
+-- donor_id, category_id, donation_id, ngo_id, request_id and every
+-- users.user_id FK are already indexed - adding a second index on them
+-- here would be pure duplication.
+--
+-- What's NOT covered by a PK/FK/UNIQUE already is any column that is
+-- (a) not a key at all, but (b) sits in a WHERE clause on nearly every
+-- page load. Those are the ones indexed below, each tied to a real
+-- query in the app:
+--
+--   donations(status, expiry_time)
+--     Serves both directions of the single busiest query in the app -
+--     "browse available food" (status='Available' AND expiry_time>NOW())
+--     in ngo/available_food.php, and the opposite comparison run by
+--     auto_expire_all_donations() on nearly every page load. status is
+--     the equality column and comes first; expiry_time is the range
+--     column and comes second - the correct order for a composite index.
+--
+--   requests(status)
+--     admin/requests.php defaults to, and is filtered by, status on
+--     every load ("Pending" queue); ngo/dashboard.php and
+--     admin/dashboard.php both COUNT(*) ... WHERE status = '...'.
+--
+--   pickups(pickup_status)
+--     Same shape of query for the pickup logistics board.
+--
+--   users(role)
+--     admin/users.php filters by role; every login resolves a role to
+--     a dashboard.
+--
+-- Not indexed here on purpose: users.email already has uq_users_email
+-- (a UNIQUE constraint, which IS a unique index - reindexing it would
+-- be redundant), and categories.category_id/donations.category_id are
+-- already covered by the PK/FK indexing described above.
+-- =====================================================================
+CREATE INDEX idx_donations_status_expiry ON donations (status, expiry_time);
+CREATE INDEX idx_requests_status         ON requests (status);
+CREATE INDEX idx_pickups_status          ON pickups (pickup_status);
+CREATE INDEX idx_users_role              ON users (role);

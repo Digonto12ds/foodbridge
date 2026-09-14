@@ -19,16 +19,10 @@ if (!$donation_id) {
 
 auto_expire_all_donations($pdo);
 
-$stmt = $pdo->prepare(
-    'SELECT d.*, c.category_name, COALESCE(don.organization_name, u.name) AS donor_display_name,
-            u.phone AS donor_phone
-     FROM donations d
-     JOIN categories c ON c.category_id = d.category_id
-     JOIN donors don ON don.donor_id = d.donor_id
-     JOIN users u ON u.user_id = don.user_id
-     WHERE d.donation_id = :id
-     LIMIT 1'
-);
+// v_donation_details (database/advanced_features.sql) is the donations +
+// categories + donors + users join, defined once and reused across the
+// donor-facing pages instead of hand-written here.
+$stmt = $pdo->prepare('SELECT * FROM v_donation_details WHERE donation_id = :id LIMIT 1');
 $stmt->execute([':id' => $donation_id]);
 $donation = $stmt->fetch();
 

@@ -37,17 +37,17 @@ if ($status_filter !== 'all' && !in_array($status_filter, $valid_statuses, true)
     $status_filter = 'all';
 }
 
-$sql = "SELECT d.*, c.category_name, COALESCE(don.organization_name, u.name) AS donor_display_name
-        FROM donations d
-        JOIN categories c ON c.category_id = d.category_id
-        JOIN donors don ON don.donor_id = d.donor_id
-        JOIN users u ON u.user_id = don.user_id";
+// v_donation_details (database/advanced_features.sql) is the donations +
+// categories + donors + users join, defined once and reused here for both
+// the list and the detail card below instead of writing the same 4-table
+// join out twice in this one file.
+$sql = "SELECT * FROM v_donation_details";
 $params = [];
 if ($status_filter !== 'all') {
-    $sql .= ' WHERE d.status = :status';
+    $sql .= ' WHERE status = :status';
     $params[':status'] = $status_filter;
 }
-$sql .= ' ORDER BY d.created_at DESC';
+$sql .= ' ORDER BY created_at DESC';
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
@@ -57,15 +57,7 @@ $donations = $stmt->fetchAll();
 $detail = null;
 $view_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if ($view_id) {
-    $stmt = $pdo->prepare(
-        "SELECT d.*, c.category_name, COALESCE(don.organization_name, u.name) AS donor_display_name, u.phone AS donor_phone
-         FROM donations d
-         JOIN categories c ON c.category_id = d.category_id
-         JOIN donors don ON don.donor_id = d.donor_id
-         JOIN users u ON u.user_id = don.user_id
-         WHERE d.donation_id = :id
-         LIMIT 1"
-    );
+    $stmt = $pdo->prepare('SELECT * FROM v_donation_details WHERE donation_id = :id LIMIT 1');
     $stmt->execute([':id' => $view_id]);
     $detail = $stmt->fetch();
 }
