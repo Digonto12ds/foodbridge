@@ -83,6 +83,7 @@ require __DIR__ . '/_nav.php';
             <?php if (can_cancel_donation($donation['status'])): ?>
               <form action="cancel_donation.php" method="post" class="d-inline"
                     onsubmit="return confirm('Cancel this donation? This cannot be undone.');">
+                <?= csrf_field() ?>
                 <input type="hidden" name="donation_id" value="<?= (int) $donation['donation_id'] ?>">
                 <button type="submit" class="btn btn-outline-danger">Cancel Donation</button>
               </form>

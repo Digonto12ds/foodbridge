@@ -28,6 +28,8 @@ $old = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $old['category_id']     = $_POST['category_id'] ?? '';
     $old['food_name']       = sanitize_input($_POST['food_name'] ?? '');
     $old['description']     = sanitize_input($_POST['description'] ?? '');
@@ -145,6 +147,7 @@ require __DIR__ . '/_nav.php';
           <?php endif; ?>
 
           <form method="post" action="add_donation.php" novalidate>
+            <?= csrf_field() ?>
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="food_name" class="form-label">Food Name</label>

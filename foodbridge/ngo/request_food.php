@@ -13,6 +13,7 @@ require_role('ngo');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect(BASE_URL . 'ngo/available_food.php');
 }
+verify_csrf();
 
 $ngo_id = get_ngo_id($pdo, current_user_id());
 if ($ngo_id === null) {

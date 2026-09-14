@@ -36,6 +36,8 @@ $old = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $old['name']              = sanitize_input($_POST['name'] ?? '');
     $old['phone']             = sanitize_input($_POST['phone'] ?? '');
     $old['address']           = sanitize_input($_POST['address'] ?? '');
@@ -126,6 +128,7 @@ require __DIR__ . '/_nav.php';
           <?php endif; ?>
 
           <form method="post" action="profile.php" novalidate>
+            <?= csrf_field() ?>
             <div class="mb-3">
               <label class="form-label">Email</label>
               <input type="email" class="form-control" value="<?= e($profile['email']) ?>" disabled>

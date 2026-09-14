@@ -15,6 +15,8 @@ $errors = [];
 $success = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel') {
+    verify_csrf();
+
     $donation_id = filter_input(INPUT_POST, 'donation_id', FILTER_VALIDATE_INT);
     if ($donation_id) {
         $stmt = $pdo->prepare(
@@ -96,6 +98,7 @@ require __DIR__ . '/_nav.php';
             <?php if (!in_array($detail['status'], ['Completed', 'Cancelled'], true)): ?>
               <form method="post" action="donations.php?status=<?= e($status_filter) ?>"
                     onsubmit="return confirm('Cancel this donation? Use this for inappropriate or problem listings.');">
+                <?= csrf_field() ?>
                 <input type="hidden" name="action" value="cancel">
                 <input type="hidden" name="donation_id" value="<?= (int) $detail['donation_id'] ?>">
                 <button type="submit" class="btn btn-outline-danger">Cancel Donation</button>

@@ -12,6 +12,8 @@ $success = null;
 $valid_pickup_statuses = ['Scheduled', 'Picked Up', 'Completed', 'Cancelled'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update') {
+    verify_csrf();
+
     $pickup_id     = filter_input(INPUT_POST, 'pickup_id', FILTER_VALIDATE_INT);
     $pickup_date   = trim($_POST['pickup_date'] ?? '');
     $pickup_time   = trim($_POST['pickup_time'] ?? '');
@@ -99,6 +101,7 @@ require __DIR__ . '/_nav.php';
                        (invalid HTML), so this empty form lives here and every
                        control above references it via the form="..." attribute. -->
                   <form id="<?= e($formid) ?>" method="post" action="pickups.php">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="update">
                     <input type="hidden" name="pickup_id" value="<?= (int) $p['pickup_id'] ?>">
                   </form>

@@ -31,6 +31,54 @@ function redirect(string $url): void
 }
 
 /**
+ * CSRF protection
+ * ================
+ * One random, unguessable token per session. Every POST form embeds it
+ * as a hidden field (csrf_field()); every POST handler checks it
+ * (verify_csrf()) before doing anything else. Without this, a page on
+ * any other website could silently submit a form to, say,
+ * donor/cancel_donation.php using a logged-in visitor's own session
+ * cookie - the browser sends cookies automatically, but it can't know
+ * this per-session secret, so a forged request fails the check.
+ */
+
+/** Get this session's CSRF token, generating one the first time it's needed. */
+function csrf_token(): string
+{
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+/** The hidden field every <form method="post"> in the app includes. */
+function csrf_field(): string
+{
+    return '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
+}
+
+/**
+ * Call this first, right after confirming REQUEST_METHOD === 'POST' and
+ * before touching any submitted data. Uses hash_equals() so comparing
+ * the token can't leak timing information about a correct answer.
+ */
+function verify_csrf(): void
+{
+    $expected  = $_SESSION['csrf_token'] ?? '';
+    $submitted = $_POST['csrf_token'] ?? '';
+
+    // $expected === '' must fail closed on its own: if this session never
+    // had a token issued (e.g. a POST arrives with no prior GET of the
+    // form that would have called csrf_token()), an empty submitted value
+    // would otherwise compare equal to an empty expected value and the
+    // check would wrongly pass.
+    if ($expected === '' || !is_string($submitted) || !hash_equals($expected, $submitted)) {
+        http_response_code(403);
+        die('Security check failed - this form submission could not be verified. Please go back, reload the page, and try again.');
+    }
+}
+
+/**
  * Look up the donor_id (donors table) that belongs to a logged-in user.
  * The `donations` table is keyed by donor_id, not user_id, so every
  * donor page needs this to scope queries to "only my own donations".

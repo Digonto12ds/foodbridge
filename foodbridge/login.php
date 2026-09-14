@@ -17,6 +17,8 @@ $errors = [];
 $old_email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $old_email = sanitize_input($_POST['email'] ?? '');
     $password  = $_POST['password'] ?? '';
 
@@ -80,6 +82,7 @@ require __DIR__ . '/includes/header.php';
           <?php endif; ?>
 
           <form method="post" action="login.php" novalidate>
+            <?= csrf_field() ?>
             <div class="mb-3">
               <label for="email" class="form-label">Email</label>
               <input type="email" class="form-control" id="email" name="email"

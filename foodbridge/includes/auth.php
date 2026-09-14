@@ -22,6 +22,24 @@ require_once __DIR__ . '/functions.php';             // e(), redirect(), etc.
 
 // Start the session exactly once, no matter how many included files call this.
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    // Harden the session cookie before the session opens (cookie params
+    // can't be changed after session_start()):
+    //   httponly - client-side JavaScript can never read this cookie, so
+    //              an XSS bug elsewhere on the page can't steal the session
+    //   samesite - 'Lax' stops the cookie being sent on a cross-site POST,
+    //              which is exactly how a CSRF attack would try to ride in
+    //   secure   - only sent over HTTPS, once the site is actually served
+    //              over HTTPS; forcing it on now would break login on this
+    //              local http://localhost XAMPP setup
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || ($_SERVER['SERVER_PORT'] ?? '') === '443';
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure'   => $https,
+    ]);
     session_start();
 }
 

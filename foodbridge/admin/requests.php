@@ -28,6 +28,8 @@ $errors = [];
 $success = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $action     = $_POST['action'] ?? '';
     $request_id = filter_input(INPUT_POST, 'request_id', FILTER_VALIDATE_INT);
 
@@ -202,6 +204,7 @@ require __DIR__ . '/_nav.php';
               <td>
                 <?php if ($r['status'] === 'Pending'): ?>
                   <form method="post" action="requests.php?status=<?= e($status_filter) ?>" class="d-flex gap-1 align-items-center flex-wrap">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="request_id" value="<?= (int) $r['request_id'] ?>">
                     <input type="date" name="pickup_date" class="form-control form-control-sm" style="width: 145px;" min="<?= e($today) ?>" required>
                     <input type="time" name="pickup_time" class="form-control form-control-sm" style="width: 110px;" required>

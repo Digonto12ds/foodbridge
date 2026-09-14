@@ -30,6 +30,8 @@ $old = [
 $valid_donor_types = ['Restaurant', 'Hotel', 'Bakery', 'Supermarket', 'Individual'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $old['role']              = $_POST['role'] ?? '';
     $old['name']              = sanitize_input($_POST['name'] ?? '');
     $old['email']             = sanitize_input($_POST['email'] ?? '');
@@ -182,6 +184,7 @@ require __DIR__ . '/includes/header.php';
           <?php endif; ?>
 
           <form method="post" action="register.php" novalidate>
+            <?= csrf_field() ?>
 
             <fieldset class="mb-3">
               <legend class="col-form-label pt-0">Register as</legend>

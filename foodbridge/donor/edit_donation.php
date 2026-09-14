@@ -47,6 +47,8 @@ $old = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $old['category_id']     = $_POST['category_id'] ?? '';
     $old['food_name']       = sanitize_input($_POST['food_name'] ?? '');
     $old['description']     = sanitize_input($_POST['description'] ?? '');
@@ -167,6 +169,7 @@ require __DIR__ . '/_nav.php';
           <?php endif; ?>
 
           <form method="post" action="edit_donation.php?id=<?= (int) $donation_id ?>" novalidate>
+            <?= csrf_field() ?>
             <input type="hidden" name="donation_id" value="<?= (int) $donation_id ?>">
             <div class="row g-3">
               <div class="col-md-6">

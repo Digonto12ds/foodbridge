@@ -10,6 +10,7 @@ require_role('donor');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect(BASE_URL . 'donor/my_donations.php');
 }
+verify_csrf();
 
 $donor_id = get_donor_id($pdo, current_user_id());
 if ($donor_id === null) {

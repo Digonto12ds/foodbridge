@@ -91,6 +91,7 @@ require __DIR__ . '/_nav.php';
           <?php if ($can_request): ?>
             <h5>Request This Food</h5>
             <form action="request_food.php" method="post" class="row g-2 align-items-end">
+              <?= csrf_field() ?>
               <input type="hidden" name="donation_id" value="<?= (int) $donation['donation_id'] ?>">
               <div class="col-sm-5">
                 <label for="requested_quantity" class="form-label">

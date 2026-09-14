@@ -13,6 +13,7 @@ $success = null;
 $action = $_POST['action'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
 
     if ($action === 'add') {
         $name = sanitize_input($_POST['category_name'] ?? '');
@@ -98,6 +99,7 @@ require __DIR__ . '/_nav.php';
       <div class="card-body">
         <h5 class="card-title">Add Category</h5>
         <form method="post" action="categories.php" class="row g-2">
+          <?= csrf_field() ?>
           <input type="hidden" name="action" value="add">
           <div class="col-sm-8">
             <input type="text" class="form-control" name="category_name" maxlength="50" placeholder="Category name" required>
@@ -122,6 +124,7 @@ require __DIR__ . '/_nav.php';
             <tr>
               <td>
                 <form method="post" action="categories.php" class="d-flex gap-2">
+                  <?= csrf_field() ?>
                   <input type="hidden" name="action" value="edit">
                   <input type="hidden" name="category_id" value="<?= (int) $cat['category_id'] ?>">
                   <input type="text" class="form-control form-control-sm" name="category_name" maxlength="50"
@@ -133,6 +136,7 @@ require __DIR__ . '/_nav.php';
               <td>
                 <form method="post" action="categories.php"
                       onsubmit="return confirm('Delete this category? This cannot be undone.');">
+                  <?= csrf_field() ?>
                   <input type="hidden" name="action" value="delete">
                   <input type="hidden" name="category_id" value="<?= (int) $cat['category_id'] ?>">
                   <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>

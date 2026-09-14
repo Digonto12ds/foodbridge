@@ -14,6 +14,8 @@ $errors = [];
 $success = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $action = $_POST['action'] ?? '';
 
     if ($action === 'record') {
@@ -172,6 +174,7 @@ require __DIR__ . '/_nav.php';
               <small class="text-muted">(requested <?= e(format_qty((float) $r['requested_quantity'], $r['unit'])) ?>)</small>
             </h6>
             <form method="post" action="distributions.php" class="row g-2 align-items-end">
+              <?= csrf_field() ?>
               <input type="hidden" name="action" value="record">
               <input type="hidden" name="request_id" value="<?= (int) $r['request_id'] ?>">
               <div class="col-sm-2">
@@ -228,6 +231,7 @@ require __DIR__ . '/_nav.php';
                 <td><?= e(date('d M Y', strtotime($d['distribution_date']))) ?></td>
                 <td>
                   <form id="<?= e($formid) ?>" method="post" action="distributions.php">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="distribution_id" value="<?= (int) $d['distribution_id'] ?>">
                   </form>

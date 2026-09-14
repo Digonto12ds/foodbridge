@@ -10,6 +10,8 @@ $admin_user_id = current_user_id();
 $flash = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'toggle_active') {
+    verify_csrf();
+
     $target_id = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
     if ($target_id) {
         $result = toggle_user_active($pdo, $target_id, $admin_user_id);
@@ -94,6 +96,7 @@ require __DIR__ . '/_nav.php';
                 <?php else: ?>
                   <form method="post" action="users.php" class="d-inline"
                         onsubmit="return confirm('<?= (int) $u['is_active'] === 1 ? 'Deactivate' : 'Activate' ?> this user?');">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="action" value="toggle_active">
                     <input type="hidden" name="user_id" value="<?= (int) $u['user_id'] ?>">
                     <?php if ((int) $u['is_active'] === 1): ?>
