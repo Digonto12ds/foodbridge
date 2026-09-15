@@ -110,12 +110,29 @@
                 // that spans multiple <td>s - see admin/pickups.php).
                 var selector = 'button[type="submit"]';
                 if (form.id) selector += ', button[type="submit"][form="' + form.id + '"]';
+                var buttons = [];
                 document.querySelectorAll(selector).forEach(function (btn) {
                     if (form.id ? (btn.form !== form) : !form.contains(btn)) return;
-                    btn.disabled = true;
-                    btn.dataset.originalText = btn.innerHTML;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' + btn.textContent.trim();
+                    buttons.push(btn);
                 });
+                // Disabling the button that was just clicked to submit this
+                // form is what actually triggers the bug: in Chromium-based
+                // browsers, a submit button disabled synchronously during its
+                // own 'submit' event has its name=value pair silently dropped
+                // from the request (e.g. admin/requests.php's Approve/Reject
+                // buttons rely on name="action" value="approve"/"reject" to
+                // tell the two actions apart - losing it meant the server saw
+                // neither action and did nothing, with no error shown).
+                // Deferring the disable by one tick lets the browser finish
+                // building and sending the form data first; it still happens
+                // fast enough to block a human double-click.
+                setTimeout(function () {
+                    buttons.forEach(function (btn) {
+                        btn.disabled = true;
+                        btn.dataset.originalText = btn.innerHTML;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' + btn.textContent.trim();
+                    });
+                }, 0);
             });
         });
         window.addEventListener('pageshow', function (evt) {

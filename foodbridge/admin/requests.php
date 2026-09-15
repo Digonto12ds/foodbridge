@@ -84,10 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->commit();
                 $success = 'Request approved and pickup scheduled.';
 
-            } catch (RuntimeException $ex) {
-                $pdo->rollBack();
-                $errors[] = $ex->getMessage();
             } catch (PDOException $ex) {
+                // PDOException extends RuntimeException, so this catch MUST come
+                // before the RuntimeException one below - PHP matches catch blocks
+                // in source order, and a PDOException would otherwise always match
+                // the (more general) RuntimeException catch first, making this
+                // block unreachable and leaking the raw SQLSTATE message instead
+                // of the friendly one meant for the admin to read.
                 $pdo->rollBack();
                 error_log('FoodBridge request approval failed: ' . $ex->getMessage());
                 // SQLSTATE 45000 is trg_requests_after_approve's own SIGNAL -
@@ -95,6 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = ($ex->getCode() === '45000')
                     ? 'The linked donation is no longer in a Requested state, so this request can no longer be approved.'
                     : 'Could not approve this request. Please try again.';
+            } catch (RuntimeException $ex) {
+                $pdo->rollBack();
+                $errors[] = $ex->getMessage();
             }
         }
 
@@ -127,13 +133,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
             $success = 'Request rejected. The donation is available again.';
 
-        } catch (RuntimeException $ex) {
-            $pdo->rollBack();
-            $errors[] = $ex->getMessage();
         } catch (PDOException $ex) {
+            // Same ordering fix as the approve branch above: PDOException
+            // extends RuntimeException, so it must be caught first.
             $pdo->rollBack();
             error_log('FoodBridge request rejection failed: ' . $ex->getMessage());
             $errors[] = 'Could not reject this request. Please try again.';
+        } catch (RuntimeException $ex) {
+            $pdo->rollBack();
+            $errors[] = $ex->getMessage();
         }
     }
 }
